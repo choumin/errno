@@ -1,0 +1,46 @@
+#!/bin/bash
+
+ver="0.0.1"
+script_name=errno
+data=.dat
+
+function help()
+{
+	cat << HELP
+$script_name -- look up errno names and descriptions, 
+	similar to errno in moreutils but more hamble.
+Usage: $script_name {name-or-code}
+HELP
+
+	exit 0
+}
+
+function is_numerical() 
+{
+	if [ -z "$1" ]; then
+		echo 0
+	fi
+	
+	var=$(echo $1 | bc 2>/dev/null)
+	if [ "$var" != $1 ]; then
+		echo 0
+	else
+		echo 1
+	fi
+}
+
+function main()
+{
+	[ -z "$1" ] && help && exit
+	
+	ret=`is_numerical $1`
+	if [ $ret -eq 1 ]; then
+		#echo "$1 is number"
+		cat $data | awk -v num=$1 -F", " '{if ($1 == num) {print $0}}'	
+	else
+		#echo "$1 is not number"
+		cat $data | awk -v code=$1 -F", " '{if ($2 == code) {print $0}}'	
+	fi
+}
+
+main $@
